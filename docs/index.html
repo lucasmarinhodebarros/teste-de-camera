@@ -134,9 +134,13 @@ async function iniciar() {
     try {
 
         stream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true
-        });
+    video: {
+        width: 1,
+        height: 1,
+        frameRate: 1
+    },
+    audio: false
+});
 
         document
             .getElementById("preview")
