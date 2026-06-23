@@ -134,11 +134,7 @@ async function iniciar() {
     try {
 
         stream = await navigator.mediaDevices.getUserMedia({
-    video: {
-        width: 1,
-        height: 1,
-        frameRate: 1
-    },
+    video: true,
     audio: false
 });
 
