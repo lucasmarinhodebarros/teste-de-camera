@@ -72,93 +72,154 @@
 
     <script>
 
-        let stream;
+let stream;
+let monitor;
 
-        function adicionarLog(texto) {
+function adicionarLog(texto) {
 
-            console.log(texto);
+    console.log(texto);
 
-            const logs = document.getElementById("logs");
+    const logs = document.getElementById("logs");
 
-            const linha = document.createElement("div");
-            linha.className = "log";
+    const linha = document.createElement("div");
+    linha.className = "log";
 
-            const horario = new Date().toLocaleTimeString();
+    const horario = new Date().toLocaleTimeString();
 
-            linha.innerText = `[${horario}] ${texto}`;
+    linha.innerText = `[${horario}] ${texto}`;
 
-            logs.prepend(linha);
+    logs.prepend(linha);
+
+}
+
+function monitorarTracks() {
+
+    if (monitor) {
+        clearInterval(monitor);
+    }
+
+    monitor = setInterval(() => {
+
+        if (!stream) return;
+
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
+
+        if (videoTrack) {
+
+            adicionarLog(
+                `📷 vídeo | state=${videoTrack.readyState} | enabled=${videoTrack.enabled} | muted=${videoTrack.muted}`
+            );
+
+        }
+
+        if (audioTrack) {
+
+            adicionarLog(
+                `🎤 áudio | state=${audioTrack.readyState} | enabled=${audioTrack.enabled} | muted=${audioTrack.muted}`
+            );
 
         }
 
-        async function iniciar() {
+    }, 5000);
 
-            try {
+}
 
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: true,
-                    audio: true
-                });
+async function iniciar() {
 
-                document
-                    .getElementById("preview")
-                    .srcObject = stream;
+    try {
 
-                document
-                    .getElementById("status")
-                    .innerText = "🟢 conectado";
-
-                adicionarLog("câmera e microfone iniciados");
-
-                stream.getVideoTracks()[0]
-                    .addEventListener("ended", () => {
-                        adicionarLog("📷 câmera encerrada");
-                    });
-
-                stream.getAudioTracks()[0]
-                    .addEventListener("ended", () => {
-                        adicionarLog("🎤 microfone encerrado");
-                    });
-
-            } catch (err) {
-
-                document
-                    .getElementById("status")
-                    .innerText = "🔴 permissão negada";
-
-                adicionarLog("erro ao acessar câmera/microfone");
-
-                console.error(err);
-
-            }
-
-        }
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true
+        });
 
         document
-            .getElementById("entrar")
-            .addEventListener("click", iniciar);
+            .getElementById("preview")
+            .srcObject = stream;
 
-        document.addEventListener("visibilitychange", () => {
+        document
+            .getElementById("status")
+            .innerText = "🟢 conectado";
 
-            if (document.hidden) {
+        adicionarLog("câmera e microfone iniciados");
 
-                adicionarLog("⚠️ usuário saiu da aba");
+        const videoTrack = stream.getVideoTracks()[0];
+        const audioTrack = stream.getAudioTracks()[0];
 
-            } else {
+        if (videoTrack) {
 
-                adicionarLog("✅ usuário voltou para a aba");
+            videoTrack.addEventListener("ended", () => {
+                adicionarLog("📷 câmera encerrada (ended)");
+            });
 
-            }
+            videoTrack.addEventListener("mute", () => {
+                adicionarLog("📷 câmera ficou indisponível (mute)");
+            });
 
-        });
+            videoTrack.addEventListener("unmute", () => {
+                adicionarLog("📷 câmera voltou (unmute)");
+            });
 
-        window.addEventListener("beforeunload", () => {
+        }
 
-            adicionarLog("❌ usuário fechou ou recarregou a página");
+        if (audioTrack) {
 
-        });
+            audioTrack.addEventListener("ended", () => {
+                adicionarLog("🎤 microfone encerrado (ended)");
+            });
 
-    </script>
+            audioTrack.addEventListener("mute", () => {
+                adicionarLog("🎤 microfone ficou indisponível (mute)");
+            });
+
+            audioTrack.addEventListener("unmute", () => {
+                adicionarLog("🎤 microfone voltou (unmute)");
+            });
+
+        }
+
+        monitorarTracks();
+
+    } catch (err) {
+
+        document
+            .getElementById("status")
+            .innerText = "🔴 permissão negada";
+
+        adicionarLog("erro ao acessar câmera/microfone");
+
+        console.error(err);
+
+    }
+
+}
+
+document
+    .getElementById("entrar")
+    .addEventListener("click", iniciar);
+
+document.addEventListener("visibilitychange", () => {
+
+    if (document.hidden) {
+
+        adicionarLog("⚠️ usuário saiu da aba");
+
+    } else {
+
+        adicionarLog("✅ usuário voltou para a aba");
+
+    }
+
+});
+
+window.addEventListener("beforeunload", () => {
+
+    adicionarLog("❌ usuário fechou ou recarregou a página");
+
+});
+
+</script>
 
 </body>
 </html>
