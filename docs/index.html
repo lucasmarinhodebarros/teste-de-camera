@@ -125,6 +125,12 @@ function monitorarTracks() {
 
         }
 
+        const videoElement = document.getElementById("preview");
+
+        adicionarLog(
+            `🎬 preview | paused=${videoElement.paused} | ended=${videoElement.ended}`
+        );
+
     }, 5000);
 
 }
@@ -134,9 +140,9 @@ async function iniciar() {
     try {
 
         stream = await navigator.mediaDevices.getUserMedia({
-    video: false,
-    audio: true
-});
+            video: true,
+            audio: true
+        });
 
         document
             .getElementById("preview")
@@ -146,12 +152,24 @@ async function iniciar() {
             .getElementById("status")
             .innerText = "🟢 conectado";
 
-        adicionarLog("câmera e microfone iniciados");
+        adicionarLog("captura iniciada");
 
         const videoTrack = stream.getVideoTracks()[0];
         const audioTrack = stream.getAudioTracks()[0];
 
         if (videoTrack) {
+
+            videoTrack.onmute = () => {
+                adicionarLog("📷 videoTrack.onmute");
+            };
+
+            videoTrack.onunmute = () => {
+                adicionarLog("📷 videoTrack.onunmute");
+            };
+
+            videoTrack.onended = () => {
+                adicionarLog("📷 videoTrack.onended");
+            };
 
             videoTrack.addEventListener("ended", () => {
                 adicionarLog("📷 câmera encerrada (ended)");
@@ -168,6 +186,18 @@ async function iniciar() {
         }
 
         if (audioTrack) {
+
+            audioTrack.onmute = () => {
+                adicionarLog("🎤 audioTrack.onmute");
+            };
+
+            audioTrack.onunmute = () => {
+                adicionarLog("🎤 audioTrack.onunmute");
+            };
+
+            audioTrack.onended = () => {
+                adicionarLog("🎤 audioTrack.onended");
+            };
 
             audioTrack.addEventListener("ended", () => {
                 adicionarLog("🎤 microfone encerrado (ended)");
