@@ -195,9 +195,38 @@ async function iniciar() {
 
 }
 
+function pararCamera() {
+
+    if (!stream) {
+        adicionarLog("nenhuma captura ativa");
+        return;
+    }
+
+    stream.getTracks().forEach(track => {
+        track.stop();
+    });
+
+    clearInterval(monitor);
+
+    document
+        .getElementById("preview")
+        .srcObject = null;
+
+    document
+        .getElementById("status")
+        .innerText = "🔴 desconectado";
+
+    adicionarLog("🛑 captura encerrada manualmente");
+
+}
+
 document
     .getElementById("entrar")
     .addEventListener("click", iniciar);
+
+document
+    .getElementById("parar")
+    .addEventListener("click", pararCamera);
 
 document.addEventListener("visibilitychange", () => {
 
