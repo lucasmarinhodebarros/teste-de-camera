@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>teste de sessão</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        video {
+            width: 320px;
+            max-width: 90%;
+            margin-top: 20px;
+            border-radius: 12px;
+        }
+
+        #logs {
+            margin-top: 30px;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 10px;
+            height: 250px;
+            overflow-y: auto;
+        }
+
+        .log {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>teste de sessão privada</h1>
+
+    <button id="entrar">
+        entrar
+    </button>
+
+    <div id="status">
+        desconectado
+    </div>
+
+    <video
+        id="preview"
+        autoplay
+        muted
+        playsinline>
+    </video>
+
+    <div id="logs"></div>
+
+    <script>
+
+        let stream;
+
+        function adicionarLog(texto) {
+
+            console.log(texto);
+
+            const logs = document.getElementById("logs");
+
+            const linha = document.createElement("div");
+            linha.className = "log";
+
+            const horario = new Date().toLocaleTimeString();
+
+            linha.innerText = `[${horario}] ${texto}`;
+
+            logs.prepend(linha);
+
+        }
+
+        async function iniciar() {
+
+            try {
+
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: true,
+                    audio: true
+                });
+
+                document
+                    .getElementById("preview")
+                    .srcObject = stream;
+
+                document
+                    .getElementById("status")
+                    .innerText = "🟢 conectado";
+
+                adicionarLog("câmera e microfone iniciados");
+
+                stream.getVideoTracks()[0]
+                    .addEventListener("ended", () => {
+                        adicionarLog("📷 câmera encerrada");
+                    });
+
+                stream.getAudioTracks()[0]
+                    .addEventListener("ended", () => {
+                        adicionarLog("🎤 microfone encerrado");
+                    });
+
+            } catch (err) {
+
+                document
+                    .getElementById("status")
+                    .innerText = "🔴 permissão negada";
+
+                adicionarLog("erro ao acessar câmera/microfone");
+
+                console.error(err);
+
+            }
+
+        }
+
+        document
+            .getElementById("entrar")
+            .addEventListener("click", iniciar);
+
+        document.addEventListener("visibilitychange", () => {
+
+            if (document.hidden) {
+
+                adicionarLog("⚠️ usuário saiu da aba");
+
+            } else {
+
+                adicionarLog("✅ usuário voltou para a aba");
+
+            }
+
+        });
+
+        window.addEventListener("beforeunload", () => {
+
+            adicionarLog("❌ usuário fechou ou recarregou a página");
+
+        });
+
+    </script>
+
+</body>
+</html>
